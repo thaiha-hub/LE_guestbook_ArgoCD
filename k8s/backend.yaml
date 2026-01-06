@@ -2,33 +2,33 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: guestbook-backend
+  name: thaiha-guestbook-backend
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: backend
+      app: thaiha-backend
   template:
     metadata:
       labels:
-        app: backend
+        app: thaiha-backend
     spec:
       containers:
-        - name: backend
-          image: ghcr.io/thaiha-hub/le-guestbook-backend:latest
+        - name: thaiha-backend
+          image: ghcr.io/thaiha-hub/thaiha-guestbook-backend:latest
           envFrom:
             - configMapRef:
-                name: guestbook-config
+                name: thaiha-guestbook-config
           env:
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: postgres-secret
+                  name: thaiha-postgres-secret
                   key: DB_PASSWORD
             - name: REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: redis-secret
+                  name: thaiha-redis-secret
                   key: REDIS_PASSWORD
           ports:
             - containerPort: 8080

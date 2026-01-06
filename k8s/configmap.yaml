@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: guestbook-config
+  name: thaiha-guestbook-config
 data:
   DB_HOST: postgres
   DB_PORT: "5432"

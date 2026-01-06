@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: guestbook-frontend
+  name: thaiha-guestbook-frontend
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: frontend
+      app: thaiha-frontend
   template:
     metadata:
       labels:
-        app: frontend
+        app: thaiha-frontend
     spec:
       containers:
         - name: frontend
-          image: ghcr.io/thaiha-hub/le-guestbook-frontend:latest
+          image: ghcr.io/thaiha-hub/thaiha-guestbook-frontend:latest
           ports:
             - containerPort: 8080
           resources:

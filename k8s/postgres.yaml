@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: postgres-pvc
+  name: thaiha-postgres-pvc
 spec:
   accessModes:
     - ReadWriteOnce
@@ -12,16 +12,16 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: postgres
+  name: thaiha-guestbook-postgres
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: postgres
+      app: thaiha-postgres
   template:
     metadata:
       labels:
-        app: postgres
+        app: thaiha-postgres
     spec:
       containers:
         - name: postgres
@@ -34,7 +34,7 @@ spec:
             - name: POSTGRESQL_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: postgres-secret
+                  name: thaiha-postgres-secret
                   key: POSTGRESQL_PASSWORD
           volumeMounts:
             - name: data
@@ -50,5 +50,5 @@ spec:
       volumes:
         - name: data
           persistentVolumeClaim:
-            claimName: postgres-pvc
+            claimName: thaiha-postgres-pvc
 
