@@ -1,0 +1,90 @@
+# 
+name: Build and Update ArgoCD
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'k8s/**'  # Important: Don't run this pipeline if the only change was the YAML update (prevents loops)
+
+# Set permissions for the workflow
+permissions:
+  contents: write # REQUIRED: Allows the pipeline to push changes back to the repo
+  packages: write
+
+jobs:
+  # JOB 1: Build and push images onto ghcr with unique tags
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Build BACKEND with the Commit SHA as the tag
+      - name: Build Backend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: true
+          # We push TWO tags: 'latest' (for convenience) and the 'SHA' (for ArgoCD)
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/thaiha-guestbook-backend:latest
+            ghcr.io/${{ github.repository_owner }}/thaiha-guestbook-backend:${{ github.sha }}
+
+      # Build FRONTEND with the Commit SHA as the tag
+      - name: Build Frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/thaiha-guestbook-frontend:latest
+            ghcr.io/${{ github.repository_owner }}/thaiha-guestbook-frontend:${{ github.sha }}
+
+  # JOB 2: Update yaml files with new image tags and push back to repo
+  update-manifests:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update k8s yaml files with new image tags
+        run: |
+          # 1. Setup Git Identity
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+
+          # 2. Define the new tag (The unique Commit SHA from this run)
+          NEW_TAG=${{ github.sha }}
+          echo "Updating images to tag: $NEW_TAG"
+
+          # 3. Use 'sed' to replace the image tag in the text files
+          # This command looks for "image: ...backend:SOMETHING" and replaces it with "image: ...backend:NEW_TAG"
+          sed -i "s|image: ghcr.io/${{ github.repository_owner }}/thaiha-guestbook-backend:.*|image: ghcr.io/${{ github.repository_owner }}/thaiha-guestbook-backend:$NEW_TAG|g" k8s/backend-deployment.yml
+          
+          # Same for frontend
+          sed -i "s|image: ghcr.io/${{ github.repository_owner }}/thaiha-guestbook-frontend:.*|image: ghcr.io/${{ github.repository_owner }}/thaiha-guestbook-frontend:$NEW_TAG|g" k8s/frontend-deployment.yml
+
+          # 4. Check if anything actually changed (to avoid empty commits)
+          if [[ -n $(git status -s) ]]; then
+            git add k8s/backend-deployment.yml k8s/frontend-deployment.yml
+            git commit -m "Update image tags to $NEW_TAG [skip ci]"
+            git push
+            echo "yamlfiles have been successfully updated and pushed."
+          else
+            echo "No changes needed."
+          fi
