@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: frontend
+  name: thaiha-frontend
 spec:
   selector:
-    app: frontend
+    app: thaiha-frontend
   ports:
     - name: http
       port: 80
@@ -14,17 +14,17 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: backend
+  name: thaiha-backend
 spec:
   selector:
-    app: backend
+    app: thaiha-backend
   ports:
     - port: 8080
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgres
+  name: thaiha-postgres
 spec:
   selector:
     app: postgres
@@ -34,10 +34,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: redis
+  name: thaiha-redis
 spec:
   selector:
-    app: redis
+    app: thaiha-redis
   ports:
     - port: 6379
 

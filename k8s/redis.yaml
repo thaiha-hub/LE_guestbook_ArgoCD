@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: redis
+  name: thaiha-guestbook-redis
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: redis
+      app: thaiha-redis
   template:
     metadata:
       labels:
-        app: redis
+        app: thaiha-redis
     spec:
       containers:
         - name: redis
@@ -19,7 +19,7 @@ spec:
             - name: REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: redis-secret
+                  name: thaiha-redis-secret
                   key: REDIS_PASSWORD
           resources:
             requests:
