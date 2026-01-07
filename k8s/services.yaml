@@ -27,7 +27,7 @@ metadata:
   name: thaiha-postgres
 spec:
   selector:
-    app: postgres
+    app: thaiha-postgres
   ports:
     - port: 5432
 ---
