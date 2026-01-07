@@ -2,16 +2,16 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: thaiha-guestbook-argocd
-  namespace: openshift-gitops # Or wherever ArgoCD is installed
+  namespace: openshift-gitops 
 spec:
   project: default
   source:
-    repoURL: https://github.com/thaiha-hub/LE_guestbook_ArgoCD.git
+    repoURL: https://github.com/thaiha-hub/LE_guestbook_ArgoCD
     targetRevision: HEAD
     path: k8s
   destination:
     server: https://kubernetes.default.svc
-    namespace: grupp2-test
+    namespace: grupp2
   syncPolicy:
     automated:
       prune: true
