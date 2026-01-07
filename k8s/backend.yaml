@@ -20,6 +20,11 @@ spec:
             - configMapRef:
                 name: thaiha-guestbook-config
           env:
+            - name: DB_HOST
+              value: thaiha-postgres
+            - name: REDIS_HOST
+              value: thaiha-redis
+              
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
