@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: thaiha-backend
-          image: ghcr.io/thaiha-hub/thaiha-guestbook-backend:7b887501e59bdcb79c26d1f54e3bdea94a33b0c7
+          image: ghcr.io/thaiha-hub/thaiha-guestbook-backend:08fd274c9e4bc42eef045e80061cbfbf33925e75
           envFrom:
             - configMapRef:
                 name: thaiha-guestbook-config
