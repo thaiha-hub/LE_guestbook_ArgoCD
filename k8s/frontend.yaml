@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: ghcr.io/thaiha-hub/thaiha-guestbook-frontend:fc53f3079b552a8b7f1e854e6ed5b593c4901667
+          image: ghcr.io/thaiha-hub/thaiha-guestbook-frontend:7b887501e59bdcb79c26d1f54e3bdea94a33b0c7
           ports:
             - containerPort: 8080
           resources:
