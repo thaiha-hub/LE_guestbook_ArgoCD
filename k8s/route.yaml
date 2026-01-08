@@ -1,11 +1,20 @@
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
-  name: frontend
+  name: thaiha-frontend
+  labels:
+    app: thaiha-frontend
+  annotations:
+    cert-manager.io/cluster-kind: ClusterIssuer
+    cert-manager.io/cluster-name: letsencrypt-prod
 spec:
   to:
     kind: Service
-    name: frontend
+    name: thaiha-frontend
+    weight: 100
   port:
     targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
 
