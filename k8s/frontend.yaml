@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: thaiha-guestbook-frontend
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: thaiha-frontend
@@ -24,4 +24,12 @@ spec:
             limits:
               cpu: "100m"
               memory: "128Mi"
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: thaiha-nginx-config
 

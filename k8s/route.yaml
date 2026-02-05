@@ -1,20 +1,16 @@
-apiVersion: route.openshift.io/v1
-kind: Route
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
   name: thaiha-frontend
-  labels:
-    app: thaiha-frontend
-  annotations:
-    cert-manager.io/cluster-kind: ClusterIssuer
-    cert-manager.io/cluster-name: letsencrypt-prod
 spec:
-  to:
-    kind: Service
-    name: thaiha-frontend
-    weight: 100
-  port:
-    targetPort: http
-  tls:
-    termination: edge
-    insecureEdgeTerminationPolicy: Redirect
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: thaiha-frontend
+                port:
+                  number: 80
 
