@@ -14,13 +14,14 @@ spec:
     spec:
       containers:
         - name: redis
-          image: quay.io/kurs/redis:latest
+          image: redis:7-alpine
           env:
             - name: REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: thaiha-redis-secret
                   key: REDIS_PASSWORD
+          command: ["sh", "-c", "redis-server --requirepass \"$REDIS_PASSWORD\""]
           resources:
             requests:
               cpu: "50m"

@@ -25,20 +25,22 @@ spec:
     spec:
       containers:
         - name: postgres
-          image: quay.io/fedora/postgresql-16:latest
+          image: postgres:16-alpine
           env:
-            - name: POSTGRESQL_USER
+            - name: POSTGRES_USER
               value: guestbook
-            - name: POSTGRESQL_DATABASE
+            - name: POSTGRES_DB
               value: guestbook
-            - name: POSTGRESQL_PASSWORD
+            - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: thaiha-postgres-secret
                   key: POSTGRESQL_PASSWORD
+            - name: POSTGRES_HOST_AUTH_METHOD
+              value: trust
           volumeMounts:
             - name: data
-              mountPath: /var/lib/pgsql/data
+              mountPath: /var/lib/postgresql/data
           resources:
             requests:
               cpu: "100m"
