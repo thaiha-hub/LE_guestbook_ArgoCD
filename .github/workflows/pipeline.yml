@@ -6,11 +6,11 @@ on:
     branches:
       - main
     paths-ignore:
-      - 'k8s/**'  # Important: Don't run this pipeline if the only change was the YAML update (prevents loops)
+      - 'k8s/**' 
 
 # Set permissions for the workflow
 permissions:
-  contents: write # REQUIRED: Allows the pipeline to push changes back to the repo
+  contents: write 
   packages: write
 
 jobs:

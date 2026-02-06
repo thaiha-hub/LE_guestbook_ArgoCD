@@ -1,122 +1,89 @@
-# Guestbook Project with ArgoCD
+# Thai Ha Dang – Guestbook med ArgoCD
 
-A Swedish Guestbook Web Application deployed on OpenShift/Kubernetes using ArgoCD for GitOps-based continuous deployment. Users can submit their name and message, which are stored in a database and displayed to visitors.
-
----
-
-## Architecture
-
-The project follows a **3-tier architecture**:
-
-```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│   Frontend  │────▶│   Backend   │────▶│  PostgreSQL │     │    Redis    │
-│   (NGINX)   │     │    (Go)     │────▶│  (Database) │     │   (Cache)   │
-└─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘
-```
+Detta projekt är ett individuellt CI/CD-slutprojekt för kursen DevOps 24. Projektet implementerar en 3-lager Guestbook-applikation på OpenShift/Kubernetes, där deployaringar och uppdateringar hanteras med ArgoCD (GitOps).
 
 ---
 
-## Components
+## Översikt
 
-| Component | Technology | Port | Location |
-|-----------|------------|------|----------|
-| Frontend | NGINX 1.26 + HTML5/JS | 8080 | `frontend/` |
-| Backend | Go 1.24 REST API | 8080 | `backend/` |
-| Database | PostgreSQL 16 | 5432 | k8s deployment |
-| Cache | Redis | 6379 | k8s deployment |
+- Gästbok med frontend (HTML/JS + NGINX), backend (Go REST API), PostgreSQL (persistent storage) och Redis (cache)
+- Användare kan:
+  - Skapa inlägg
+  - Visa alla tidigare inlägg
+  - Se statistik över antal inlägg och cache-träffar
+- ArgoCD hanterar deployment automatiskt vid ändringar i YAML eller nya Docker-images
 
 ---
 
-## Directory Structure
+## Arkitektur
+┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
+│ Frontend │────▶│ Backend │────▶│ PostgreSQL │ │ Redis │
+│ NGINX │ │ Go REST API │────▶│ Database │ │ Cache │
+└─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘
 
-```
-├── argocd-app.yaml              # ArgoCD Application manifest
-├── .github/workflows/
-│   └── pipeline.yml             # GitHub Actions CI/CD
-├── backend/
-│   ├── main.go                  # Go REST API
-│   ├── go.mod                   # Dependencies
-│   └── Dockerfile               # Multi-stage build
-├── frontend/
-│   ├── index.html               # SPA frontend
-│   ├── nginx.conf               # Reverse proxy config
-│   └── Dockerfile               # NGINX container
-└── k8s/                         # Kubernetes manifests
-    ├── backend.yaml             # Backend deployment (2 replicas)
-    ├── frontend.yaml            # Frontend deployment (2 replicas)
-    ├── postgres.yaml            # PostgreSQL + PVC
-    ├── redis.yaml               # Redis deployment
-    ├── services.yaml            # All services
-    ├── configmap.yaml           # Non-secret config
-    ├── secret-db.yaml           # DB credentials
-    ├── secret-redis.yaml        # Redis password
-    └── route.yaml               # OpenShift Route + TLS
-```
+- Frontend: `thaiha-guestbook-frontend`
+- Backend: `thaiha-guestbook-backend`
+- PostgreSQL: `thaiha-guestbook-postgres`
+- Redis: `thaiha-guestbook-redis`
+
+---
+
+## URL
+
+Guestbook är åtkomlig på:  
+[https://thaiha-frontend-grupp2.apps.devops24.cloud2.se/]
+
+---
+
+## Resursnamnstandard
+
+Alla resurser är prefixed med `thaiha-` för att undvika konflikter med andra studenter:
+
+- `thaiha-guestbook-frontend` / `-backend`  
+- `thaiha-guestbook-postgres` / `-redis`  
+- `thaiha-guestbook-config` / `-secret`  
+- `thaiha-guestbook-route`  
+
+---
+
+## CI/CD-flöde
+
+### GitHub Actions (CI)
+
+- Trigger: push till `main`  
+- Steg:
+  1. Bygger Docker-images för frontend och backend
+  2. Pushar bilder till GitHub Container Registry (GHCR)
+  3. Uppdaterar YAML-filer med nya image-tags
+  4. Commit/push till `main` (`[skip ci]`)
+
+### ArgoCD (CD / GitOps)
+
+- Övervakar `k8s/` i GitHub
+- Auto-sync, auto-prune och self-heal
+- Applicerar YAML-ändringar automatiskt
+- Ny version deployas direkt när Docker-images uppdateras
 
 ---
 
 ## API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/health` | Health check with DB/cache status |
-| GET | `/api/entries` | Fetch all guestbook entries (cached) |
-| POST | `/api/entries` | Create new entry |
-| GET | `/api/stats` | Statistics (total entries, cache status) |
+| Metod | Endpoint | Funktion |
+|-------|---------|----------|
+| GET   | `/health` | Kontroll av DB och cache |
+| GET   | `/api/entries` | Hämta alla inlägg (Redis-cache) |
+| POST  | `/api/entries` | Skapa nytt inlägg |
+| GET   | `/api/stats` | Statistik: antal inlägg och cache-status |
 
 ---
 
-## CI/CD Pipeline
+## Reflektioner & Förbättringar
 
-The deployment uses a GitOps workflow:
-
-```
-Code Push → GitHub Actions → Build Images → Push to ghcr.io
-                                    ↓
-                          Update k8s/*.yaml with new tags
-                                    ↓
-                          Commit to main [skip ci]
-                                    ↓
-                          ArgoCD detects changes
-                                    ↓
-                          Auto-sync to OpenShift
-```
-
----
-
-## ArgoCD Configuration
-
-From `argocd-app.yaml`:
-- **Application**: `thaiha-guestbook-argocd`
-- **Namespace**: `grupp2`
-- **Source Path**: `k8s/`
-- **Sync Policy**: Automated with auto-prune and self-heal
-
----
-
-## Key Features
-
-- **Caching**: Redis with 30-second TTL for performance
-- **High Availability**: 2 replicas for frontend and backend
-- **Persistent Storage**: PostgreSQL uses PVC (1Gi)
-- **TLS**: Encrypted route via cert-manager
-- **GitOps**: Automatic deployments via ArgoCD
-
----
-
-## Resource Limits
-
-| Service | CPU | Memory |
-|---------|-----|--------|
-| Backend | 100m-200m | 128Mi-256Mi |
-| Frontend | 50m-100m | 64Mi-128Mi |
-| PostgreSQL | 100m-300m | 256Mi-512Mi |
-| Redis | 50m-100m | 64Mi-128Mi |
-
-
-
-
-
-
-
+- GitOps gör deployment reproducerbar och versionstyrd  
+- PVC för PostgreSQL säkerställer persistens av data  
+- Redis-cache förbättrar prestanda  
+- Förbättringsförslag:
+  - Införa liveness/readiness probes
+  - Kryptering av secrets (t.ex. SealedSecrets)
+  - Fullständig TLS med cert-manager
+  - Parametrisering via Helm Charts
